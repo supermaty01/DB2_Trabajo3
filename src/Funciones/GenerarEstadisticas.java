@@ -2,6 +2,8 @@ package Funciones;
 
 import Conexiones.MongoDB;
 import Conexiones.Oracle;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -30,16 +32,16 @@ public class GenerarEstadisticas {
 
     private void generarPais() throws Exception {
         Oracle oracle = new Oracle();
-        MongoDB mongo = new MongoDB();
+        MongoDB mongoDb = new MongoDB();
 
         Statement sentencia = oracle.conn.createStatement();
         ResultSet resultado = sentencia.executeQuery(this.queryPais);
 
-        if (!mongoDb.listCollectionNames().into(new ArrayList<>()).contains(this.coleccionPais)) {
-            mongoDb.createCollection(this.coleccionPais);
+        if (!mongoDb.conn.listCollectionNames().into(new ArrayList<>()).contains(this.coleccionPais)) {
+            mongoDb.conn.createCollection(this.coleccionPais);
         }
 
-        MongoCollection<Document> coleccion = mongoDb.getCollection(this.coleccionPais);
+        MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionPais);
 
         //TODO: Agregar o editar documentos en la coleccion
 
@@ -49,18 +51,18 @@ public class GenerarEstadisticas {
 
     private void generarEtario() throws Exception {
         Oracle oracle = new Oracle();
-        MongoDB mongo = new MongoDB();
+        MongoDB mongoDb = new MongoDB();
 
         Statement sentencia = oracle.conn.createStatement();
         ResultSet resultado;
 
         resultado = sentencia.executeQuery(this.queryEtario);
 
-        if (!mongoDb.listCollectionNames().into(new ArrayList<>()).contains(this.coleccionEtario)) {
-            mongoDb.createCollection(this.coleccionEtario);
+        if (!mongoDb.conn.listCollectionNames().into(new ArrayList<>()).contains(this.coleccionEtario)) {
+            mongoDb.conn.createCollection(this.coleccionEtario);
         }
 
-        MongoCollection<Document> coleccion = mongoDb.getCollection(this.coleccionEtario);
+        MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionEtario);
 
         //TODO: Agregar o editar documentos en la coleccion
 

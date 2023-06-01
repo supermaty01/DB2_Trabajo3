@@ -1,5 +1,9 @@
 package Conexiones;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
+
 public class MongoDB {
 
     private String baseDatos = "bd2";
@@ -14,7 +18,7 @@ public class MongoDB {
 
     public void conexionMongo() throws Exception {
         try {
-            MongoClient mongoClient = MongoClients.create(connectionString);
+            MongoClient mongoClient = MongoClients.create(url);
             this.conn = mongoClient.getDatabase(baseDatos);
         } catch (Exception e) {
             throw new Exception("No hay conexión con la base de datos MongoDB.");

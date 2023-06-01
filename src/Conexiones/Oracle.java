@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Oracle {
-    private String user = "MATEO";
+    private String user = "miguel";
     private String password = "123";
     private String url = "jdbc:oracle:thin:@localhost:1521/XEPDB1";
     public Connection conn;
