@@ -23,7 +23,7 @@ public class GenerarEstadisticas {
               ON SUCURSAL.NOM_CIUDAD = CIUDAD.NOM_CIUDAD,
               TABLE(DETALLES)
             WHERE
-                V.ESTADO = 'No Procesada'
+                V.ESTADO = 'No procesada'
             GROUP BY
               NOM_PAIS
             """;
@@ -55,8 +55,7 @@ public class GenerarEstadisticas {
         try {
             generarPais();
             generarEtario();
-            actualizarProcesados();
-
+            //actualizarProcesados();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -71,12 +70,19 @@ public class GenerarEstadisticas {
 
         if (!mongoDb.conn.listCollectionNames().into(new ArrayList<>()).contains(this.coleccionPais)) {
             mongoDb.conn.createCollection(this.coleccionPais);
+            MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionPais);
+
+            while (resultado.next()) {
+                Document document = new Document();
+                document.put("nombrepais", resultado.getString("NOM_PAIS"));
+                document.put("totalvendido", resultado.getInt("TOTAL_VENTAS"));
+                coleccion.insertOne(document);
+            }
+        } else {
+            MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionPais);
+
+            //TODO: Agregar o editar documentos en la coleccion
         }
-
-        MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionPais);
-
-        //TODO: Agregar o editar documentos en la coleccion
-
 
         oracle.conn.close();
     }
@@ -92,6 +98,15 @@ public class GenerarEstadisticas {
 
         if (!mongoDb.conn.listCollectionNames().into(new ArrayList<>()).contains(this.coleccionEtario)) {
             mongoDb.conn.createCollection(this.coleccionEtario);
+            MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionEtario);
+
+            while (resultado.next()) {
+                Document document = new Document();
+                document.put("nombrecategoria", resultado.getString("NOMBRE_CATEGORIA"));
+                document.put("grupoetario", resultado.getString("GRUPO_ETARIO"));
+                document.put("totalvendido", resultado.getInt("TOTAL_VENTAS"));
+                coleccion.insertOne(document);
+            }
         }
 
         MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionEtario);
