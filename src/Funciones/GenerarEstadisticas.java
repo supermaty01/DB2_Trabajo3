@@ -11,9 +11,41 @@ import java.util.ArrayList;
 
 public class GenerarEstadisticas {
 
-    private String queryPais = "SELECT CIUDAD.NOM_PAIS, SUM(VENTA.NUMERO_UNIDADES * VENTA.RECIO_UNITARIO) AS TOTAL_VENTAS FROM VENTA, JOIN SUCURSAL ON VENTA.COD_SUC = SUCURSAL.CODIGO_SUC, JOIN CIUDAD ON SUCURSAL.NOM_CIUDAD = CIUDAD.NOM_CIUDAD, TABLE(DETALLES) WHERE VENTA.ESTADO = \"No Procesada\" GROUP BY CIUDAD.NOM_PAIS";
-    private String queryEtario = "SELECT CATEGORIA.NOMBRE_CATEGORIA, CLIENTE.GRUPO_ETARIO, SUM(VENTA.NUMERO_UNIDADES * VENTA.RECIO_UNITARIO) AS TOTAL_VENTAS FROM VENTA, JOIN CLIENTE ON VENTA.PASAPORTE = CLIENTE.PASAPORTE, JOIN PRODUCTO ON VENTA.CODIGO_PRO = PRODUCTO.CODIGO_PRO, JOIN CATEGORIA ON PRODUCTO.CODIGO_CAT = CATEGORIA.CODIGO_CAT, TABLE(DETALLERS) WHERE VENTA.ESTADO = \"No Procesada\" GROUP BY CATEGORIA.NOMBRE_CATEGORIA, CLIENTE.GRUPO_ETARIO";
-    private String updateProcesados = "UPDATE VENTA WHERE ESTADO = \"No Procesada\" SET ESTADO = \"Procesada\"";
+    private String queryPais = """
+            SELECT
+              NOM_PAIS,
+              SUM(NUMERO_UNIDADES * PRECIO_UNITARIO) AS TOTAL_VENTAS
+            FROM
+              VENTA V
+              JOIN SUCURSAL
+              ON V.COD_SUC = SUCURSAL.CODIGO_SUC
+              JOIN CIUDAD
+              ON SUCURSAL.NOM_CIUDAD = CIUDAD.NOM_CIUDAD,
+              TABLE(DETALLES)
+            WHERE
+                V.ESTADO = 'No Procesada'
+            GROUP BY
+              NOM_PAIS
+            """;
+    private String queryEtario = """
+            SELECT
+                CATEGORIA.NOMBRE_CATEGORIA,
+                CLIENTE.GRUPO_ETARIO,
+                SUM(NUMERO_UNIDADES * PRECIO_UNITARIO) AS TOTAL_VENTAS
+            FROM
+                VENTA V
+                JOIN CLIENTE
+                ON V.PASAPORTE = CLIENTE.PASAPORTE JOIN PRODUCTO
+                ON CODIGO_PRO = PRODUCTO.CODIGO_PRO
+                JOIN CATEGORIA
+                ON PRODUCTO.CODIGO_CAT = CATEGORIA.CODIGO_CAT,
+                TABLE(DETALLES)
+            WHERE
+                V.ESTADO = 'No procesada'
+            GROUP BY
+                CATEGORIA.NOMBRE_CATEGORIA, CLIENTE.GRUPO_ETARIO
+                """;
+    private String updateProcesados = "UPDATE VENTA  SET ESTADO = 'Procesada' WHERE ESTADO = 'No procesada'";
 
     private String coleccionPais = "totalventasporpais";
     private String coleccionEtario = "totalventasporcatygedad";
