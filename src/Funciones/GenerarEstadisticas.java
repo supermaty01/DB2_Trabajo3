@@ -2,6 +2,7 @@ package Funciones;
 
 import Conexiones.MongoDB;
 import Conexiones.Oracle;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 
@@ -53,41 +54,83 @@ public class GenerarEstadisticas {
 
     public void generarEstadisticas() {
         try {
-            generarPais();
-            generarEtario();
-            //actualizarProcesados();
+            ResultadosEstadisticas resultadosPais = generarPais();
+            ResultadosEstadisticas resultadosEtario = generarEtario();
+            System.out.println(resultadosPais.getTexto() + resultadosEtario.getTexto());
+            actualizarProcesados();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
-    private void generarPais() throws Exception {
+    private ResultadosEstadisticas generarPais() throws Exception {
         Oracle oracle = new Oracle();
         MongoDB mongoDb = new MongoDB();
 
         Statement sentencia = oracle.conn.createStatement();
         ResultSet resultado = sentencia.executeQuery(this.queryPais);
 
+        long antes = 0;
+        long despues = 0;
+        long actualizados = 0;
+        long noActualizados = 0;
+        long creados = 0;
+
         if (!mongoDb.conn.listCollectionNames().into(new ArrayList<>()).contains(this.coleccionPais)) {
             mongoDb.conn.createCollection(this.coleccionPais);
             MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionPais);
 
+            int contador = 0;
             while (resultado.next()) {
+                contador++;
                 Document document = new Document();
                 document.put("nombrepais", resultado.getString("NOM_PAIS"));
                 document.put("totalvendido", resultado.getInt("TOTAL_VENTAS"));
                 coleccion.insertOne(document);
             }
+            despues = contador;
+            creados = contador;
         } else {
             MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionPais);
 
-            //TODO: Agregar o editar documentos en la coleccion
+            // Documentos antes
+            antes = coleccion.countDocuments();
+
+            while (resultado.next()) {
+                Document searchQuery = new Document();
+                searchQuery.put("nombrepais", resultado.getString("NOM_PAIS"));
+                long existeEstadistica = coleccion.countDocuments(searchQuery);
+                if (existeEstadistica > 0) {
+                    // Actualizar documento
+                    actualizados++;
+                    FindIterable<Document> cursor = coleccion.find(searchQuery);
+                    Document document = new Document();
+                    document.put("totalvendido", resultado.getInt("TOTAL_VENTAS") + cursor.first().getInteger("totalvendido"));
+                    Document updateObject = new Document();
+                    updateObject.put("$set", document);
+
+                    coleccion.updateOne(searchQuery, updateObject);
+                } else {
+                    // Crear documento
+                    creados++;
+                    Document document = new Document();
+                    document.put("nombrepais", resultado.getString("NOM_PAIS"));
+                    document.put("totalvendido", resultado.getInt("TOTAL_VENTAS"));
+                    coleccion.insertOne(document);
+                }
+
+            }
+
+            despues = antes + creados;
+            noActualizados = antes - actualizados;
         }
 
         oracle.conn.close();
+
+        return new ResultadosEstadisticas("Pais", antes, despues, actualizados, noActualizados, creados);
     }
 
-    private void generarEtario() throws Exception {
+    private ResultadosEstadisticas generarEtario() throws Exception {
         Oracle oracle = new Oracle();
         MongoDB mongoDb = new MongoDB();
 
@@ -96,25 +139,65 @@ public class GenerarEstadisticas {
 
         resultado = sentencia.executeQuery(this.queryEtario);
 
+        long antes = 0;
+        long despues = 0;
+        long actualizados = 0;
+        long noActualizados = 0;
+        long creados = 0;
+
         if (!mongoDb.conn.listCollectionNames().into(new ArrayList<>()).contains(this.coleccionEtario)) {
             mongoDb.conn.createCollection(this.coleccionEtario);
             MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionEtario);
-
+            int contador = 0;
             while (resultado.next()) {
+                contador++;
                 Document document = new Document();
                 document.put("nombrecategoria", resultado.getString("NOMBRE_CATEGORIA"));
                 document.put("grupoetario", resultado.getString("GRUPO_ETARIO"));
                 document.put("totalvendido", resultado.getInt("TOTAL_VENTAS"));
                 coleccion.insertOne(document);
             }
+            despues = contador;
+            creados = contador;
+        } else {
+            MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionEtario);
+
+            antes = coleccion.countDocuments();
+
+            while (resultado.next()) {
+                Document searchQuery = new Document();
+                searchQuery.put("nombrecategoria", resultado.getString("NOMBRE_CATEGORIA"));
+                searchQuery.put("grupoetario", resultado.getString("GRUPO_ETARIO"));
+                long existeEstadistica = coleccion.countDocuments(searchQuery);
+                if (existeEstadistica > 0) {
+                    // Actualizar documento
+                    actualizados++;
+                    FindIterable<Document> cursor = coleccion.find(searchQuery);
+                    Document document = new Document();
+                    document.put("totalvendido", resultado.getInt("TOTAL_VENTAS") + cursor.first().getInteger("totalvendido"));
+                    Document updateObject = new Document();
+                    updateObject.put("$set", document);
+
+                    coleccion.updateOne(searchQuery, updateObject);
+                } else {
+                    // Crear documento
+                    creados++;
+                    Document document = new Document();
+                    document.put("nombrecategoria", resultado.getString("NOMBRE_CATEGORIA"));
+                    document.put("grupoetario", resultado.getString("GRUPO_ETARIO"));
+                    document.put("totalvendido", resultado.getInt("TOTAL_VENTAS"));
+                    coleccion.insertOne(document);
+                }
+
+            }
+
+            despues = antes + creados;
+            noActualizados = antes - actualizados;
         }
 
-        MongoCollection<Document> coleccion = mongoDb.conn.getCollection(this.coleccionEtario);
-
-        //TODO: Agregar o editar documentos en la coleccion
-
-
         oracle.conn.close();
+
+        return new ResultadosEstadisticas("Etario", antes, despues, actualizados, noActualizados, creados);
     }
 
     private void actualizarProcesados() throws Exception {
