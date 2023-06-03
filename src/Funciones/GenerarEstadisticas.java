@@ -52,14 +52,14 @@ public class GenerarEstadisticas {
     private String coleccionEtario = "totalventasporcatygedad";
 
 
-    public void generarEstadisticas() {
+    public String generarEstadisticas() {
         try {
             ResultadosEstadisticas resultadosPais = generarPais();
             ResultadosEstadisticas resultadosEtario = generarEtario();
-            System.out.println(resultadosPais.getTexto() + resultadosEtario.getTexto());
             actualizarProcesados();
+            return resultadosPais.getTexto() + resultadosEtario.getTexto();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            return e.getMessage();
         }
     }
 

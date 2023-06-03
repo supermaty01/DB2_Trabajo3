@@ -1,11 +1,8 @@
-import Funciones.GenerarEstadisticas;
+import UI.MainView;
 
 public class Main {
 
     public static void main(String[] args) {
-
-        GenerarEstadisticas generarEstadisticas = new GenerarEstadisticas();
-        generarEstadisticas.generarEstadisticas();
-
+        new MainView();
     }
 }
