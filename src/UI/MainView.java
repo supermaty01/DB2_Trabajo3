@@ -1,6 +1,7 @@
 package UI;
 
 import Funciones.GenerarEstadisticas;
+import Funciones.ListarEstadisticas;
 
 import javax.swing.*;
 
@@ -21,7 +22,11 @@ public class MainView extends JFrame {
             GenerarEstadisticas generarEstadisticas = new GenerarEstadisticas();
             resultados.setText(generarEstadisticas.generarEstadisticas());
         });
-        listarButton.addActionListener(e -> resultados.setText("Falta hacer"));
+
+        listarButton.addActionListener(e -> {
+            ListarEstadisticas listarEstadisticas = new ListarEstadisticas();
+            resultados.setText(listarEstadisticas.listarEstadisticas());
+        });
     }
 
     private void createUIComponents() {
