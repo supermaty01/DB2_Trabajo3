@@ -34,13 +34,10 @@ public class GenerarEstadisticas {
                 CLIENTE.GRUPO_ETARIO,
                 SUM(NUMERO_UNIDADES * PRECIO_UNITARIO) AS TOTAL_VENTAS
             FROM
-                VENTA V
-                JOIN CLIENTE
-                ON V.PASAPORTE = CLIENTE.PASAPORTE JOIN PRODUCTO
-                ON CODIGO_PRO = PRODUCTO.CODIGO_PRO
-                JOIN CATEGORIA
-                ON PRODUCTO.CODIGO_CAT = CATEGORIA.CODIGO_CAT,
-                TABLE(DETALLES)
+                (SELECT * FROM VENTA, TABLE(DETALLES)) V
+                JOIN CLIENTE ON V.PASAPORTE = CLIENTE.PASAPORTE
+                JOIN PRODUCTO ON V.CODIGO_PRO = PRODUCTO.CODIGO_PRO
+                JOIN CATEGORIA ON PRODUCTO.CODIGO_CAT = CATEGORIA.CODIGO_CAT
             WHERE
                 V.ESTADO = 'No procesada'
             GROUP BY
