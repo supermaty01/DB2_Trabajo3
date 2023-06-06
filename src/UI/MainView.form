@@ -83,7 +83,7 @@
                 <constraints/>
                 <properties>
                   <editable value="false"/>
-                  <font name="Comic Sans MS" size="18"/>
+                  <font name="Cascadia Mono" size="18"/>
                   <lineWrap value="true"/>
                   <rows value="8"/>
                 </properties>
